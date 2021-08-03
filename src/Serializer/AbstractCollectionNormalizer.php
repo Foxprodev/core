@@ -75,7 +75,7 @@ abstract class AbstractCollectionNormalizer implements NormalizerInterface, Norm
     public function normalize($object, $format = null, array $context = [])
     {
         if (!isset($context['resource_class']) || isset($context['api_sub_level'])) {
-            if (($context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] ?? false) === true && $object instanceof \Countable && 0 === $object->count()) {
+            if (($context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] ?? false) && $object instanceof \Countable && 0 === $object->count()) {
                 return $object;
             }
             return $this->normalizeRawCollection($object, $format, $context);

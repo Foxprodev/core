@@ -27,6 +27,7 @@ use ApiPlatform\Core\Tests\Fixtures\NotAResource;
 use ApiPlatform\Core\Tests\ProphecyTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -253,6 +254,31 @@ class CollectionNormalizerTest extends TestCase
             $normalizedNotAResourceA,
             $normalizedNotAResourceB,
         ], $actual);
+    }
+
+    public function testPreserveEmptyObject()
+    {
+        $data = new \ArrayObject();
+
+        $contextBuilderProphecy = $this->prophesize(ContextBuilderInterface::class);
+
+        $resourceClassResolverProphecy = $this->prophesize(ResourceClassResolverInterface::class);
+        $resourceClassResolverProphecy->getResourceClass($data, null)->willThrow(InvalidArgumentException::class);
+
+        $iriConverterProphecy = $this->prophesize(IriConverterInterface::class);
+
+        $normalizer = new CollectionNormalizer($contextBuilderProphecy->reveal(), $resourceClassResolverProphecy->reveal(), $iriConverterProphecy->reveal());
+
+        $actual = $normalizer->normalize($data, CollectionNormalizer::FORMAT, [
+            AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS => true
+        ]);
+
+        $this->assertSame($data, $actual);
+
+        $actual = $normalizer->normalize($data, CollectionNormalizer::FORMAT, [
+        ]);
+
+        $this->assertSame([], $actual);
     }
 
     public function testNormalizePaginator()
