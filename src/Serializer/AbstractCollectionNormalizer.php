@@ -17,6 +17,7 @@ use ApiPlatform\Core\Api\ResourceClassResolverInterface;
 use ApiPlatform\Core\DataProvider\PaginatorInterface;
 use ApiPlatform\Core\DataProvider\PartialPaginatorInterface;
 use ApiPlatform\Core\Metadata\Resource\Factory\ResourceMetadataFactoryInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
@@ -74,6 +75,9 @@ abstract class AbstractCollectionNormalizer implements NormalizerInterface, Norm
     public function normalize($object, $format = null, array $context = [])
     {
         if (!isset($context['resource_class']) || isset($context['api_sub_level'])) {
+            if (($context[AbstractObjectNormalizer::PRESERVE_EMPTY_OBJECTS] ?? false) && $object instanceof \Countable && 0 === $object->count()) {
+                return $object;
+            }
             return $this->normalizeRawCollection($object, $format, $context);
         }
 
